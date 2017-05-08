@@ -1,0 +1,146 @@
+* {
+	color: #3D3A34;
+}
+
+header,
+h1,
+h2,
+footer,
+th,
+td,
+.playbox {
+	text-align: center;
+}
+
+header,
+footer,
+h2 {
+	background-color: #f8f8f8;
+	border-bottom-style: solid;
+	border-bottom-width: 2px;
+	border-bottom-color: lightgray;
+}
+
+h1 {
+	font-weight: 900;
+}
+
+#scoreboard {
+	width: 50%;
+}
+
+#stats,
+img {
+	width: 100%;
+	margin-bottom: 3%;
+}
+
+#currentgame {
+	width: 50%;
+}
+
+.content-section {
+	float: left;
+	padding: 1%;
+}
+
+#headerexplain {
+	font-style: italic;
+}
+
+h2{
+	/*font-weight: 300%;*/
+	padding-bottom: 10px;
+}
+
+footer{
+	padding-top: 3px;
+	height: 25px;
+}
+
+table{
+	height: 100%;
+}
+
+img{
+	border-style: solid;
+	border-width: 1px;
+	border-color: lightgray;
+	border-bottom-width: 3px;
+}
+
+.playbox {
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-top-color: lightgray;
+}
+
+#leftBox,
+#rockimg{
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-left-color: lightgray;
+}
+
+#rightBox,
+#paperimg{
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-right-color: lightgray;
+}
+
+.panel-heading {
+	background-color: #C3B416;
+}
+
+#Rock,
+#Paper,
+#Scissors{
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.panel-body p {
+	font-weight: bold;
+}
+
+.panel-body span {
+	font-weight: normal;
+}
+
+.imgbox {
+	margin-bottom: 15px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-bottom-color: lightgray;
+	padding-bottom: 15px;
+}
+
+img:hover {
+	border-style: solid;
+	border-width: 3px;
+	border-color: white;
+}
+
+img:active {
+	opacity: .5;
+}
+
+#scissorsimg {
+	padding-bottom: 14px;
+}
+
+.winBox{
+
+}
+
+.lossBox{
+
+}
+
+.done {
+	display: none;
+}
+
+
+ 

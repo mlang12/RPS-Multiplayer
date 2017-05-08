@@ -58,8 +58,8 @@ footer{
 	height: 25px;
 }
 
-table{
-	height: 100%;
+td{
+	text-align: left;
 }
 
 img{
@@ -140,6 +140,10 @@ img:active {
 
 .done {
 	display: none;
+}
+
+.boldStuff {
+	font-weight: bold;
 }
 
 

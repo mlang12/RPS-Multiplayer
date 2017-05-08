@@ -15,7 +15,7 @@
     <header class="row">
       <h1>Rock Paper Scissors</h1>
       <p id="headerexplain"> 
-        Play by typing out the first letter of the move you want to make. For example, press 'r' to play 'Rock'...
+        Once you get an opponent, click which hand you want to play and see the outcome!
       </p>
     </header>
     
@@ -30,7 +30,7 @@
       </div><!-- /.col-lg-12 -->
     </div>
     
-    <div class="mainContent row">
+    <div class="mainContent row done">
       <div class="col-sm-6">
         <div class="row">
           <section class="content-section" id="currentgame">
@@ -40,7 +40,7 @@
               </div>
               <div class="panel-body">
                 <P>You Played: <span id="input"></span></P>      
-                <P>Computer Played: <span id="comp-play"></span></P>         
+                <P><span id="oppName"> Opponent </span> Played: <span id="comp-play"></span></P>         
                 <P>Results: <span id="match-results"></span></P> 
               </div>
             </div>
@@ -90,32 +90,18 @@
               <h3 class="panel-title">Game Chat</h3>
             </div>
             <div class="panel-body">
-              <table class="table table-striped ">
-                <tbody>
-                  <tr>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td></td>
-                  </tr>
+              <table class="table">
+                <tbody id="chatTable">
                 </tbody>
               </table>   
 
               <div class="input-group">
                 <span class="input-group-btn">
-                  <button class="btn btn-default" type="button" id="submitButton">Send</button>
+                  <button class="btn btn-default" type="button" id="chatSend">Send</button>
                 </span>
-                <input type="text" class="input-group form-control" id="chatSend">
-              </div><!-- /input-group -->   
+                <input type="text" class="input-group form-control" id="chatComment">
+              </div><!-- /input-group -->  
+
             </div>  
           </div>      
         </section>
@@ -127,6 +113,8 @@
       &copy; M. A. Lang 2017
     </footer>
     
+    <!-- momentjs -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <!-- Firbase -->
     <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
     <!-- jQuery -->
@@ -139,6 +127,7 @@
     <!-- Game JS -->
     <script type="text/javascript" src="./assets/js/firebase.js"></script>
     <script type="text/javascript" src="./assets/js/rps.js"></script>
+    <script type="text/javascript" src="./assets/js/chat.js"></script>
   </body>
 </html>
 

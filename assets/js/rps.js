@@ -106,11 +106,12 @@
 			var s = snap.val();
 			var sKeys = Object.keys(s);
 			var i;
+			console.log("s: " + JSON.stringify(s))
 
 			if(sKeys.length > 1 && userKey !== ""){ //if there is more than 1 player
 
 				for(i = 0; i < sKeys.length ; i++){
-					if(s[sKeys[i]].opp.key === "" && sKeys[i] !== userKey){
+					if(s[sKeys[i]].opp.key === "" && sKeys[i] !== userKey && player.opp.key === ""){
 						player.opp.key = sKeys[i];
 						var thisSession;
 

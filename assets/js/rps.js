@@ -2,8 +2,9 @@
   
 	var userName = "";
 	var userKey = "";
-	var userInput = '';
+	var userInput = "";
 	var oppPlay = "";
+	var playedFlag = false;
 	var playable = ['r','p','s'];
 	var fullWord = ['Rock', 'Paper', 'Scissors'];
 	var winCombos = ['rs','pr','sp']; //each index holds the winner if user plays the first char
@@ -16,14 +17,13 @@
 	
 	var player = { //push the new user to the players dir
     "name": userName,
-    "played": "",
-    "round": 0,
+    "round": 1,
     "opp": {
     	"name": "",
     	"key": "",
-    	"played": "",
-    	"round": 0
-    }
+    	"play": ""
+    },
+    "session": ""
   };
 
 	var playTranslater = {	//object to translate the rock paper scissor image names in dom to play characters
@@ -45,9 +45,11 @@
       newUser.onDisconnect().remove(); //when the user disconnects remove their player from DB
       userKey = newUser.key; //store the key for reference
 	    $(".userNameInput").toggle("done"); //hide the username form
+
 	    var updates = {};
 	    updates["/players/" + userKey + "/name"] = userName;
 	    db.ref().update(updates);
+
 	    $(".mainContent").toggle("done")
 	    
 	     db.ref("/chat/").push({
@@ -61,6 +63,13 @@
     }
   });
 
+
+  $("#employeeNameInput").on("keypress", function(event){
+    if(event.keyCode === 13){
+      $("#submitButton").click();
+    }
+  })
+
 	db.ref("/players/" + userKey).on("value", function(snap) {
 		if(userName !== ""){
 			var s = snap.val();
@@ -72,23 +81,40 @@
 				for(i = 0; i < sKeys.length ; i++){
 					if(s[sKeys[i]].opp.key === "" && sKeys[i] !== userKey){
 						player.opp.key = sKeys[i];
-						player.opp.name = s[sKeys[i]].name;
+						var thisSession;
+
+						//determine unique sessionID
+						if(userKey < player.opp.key){
+							thisSession = userKey + player.opp.key;
+						} else {
+							thisSession = player.opp.key + userKey;
+						}
+
+						player.session = thisSession;
+
 						var updates = {};
 						updates["/players/" + userKey + "/opp/key"] = player.opp.key;
 						updates["/players/" + sKeys[i] + "/opp/key"] = userKey;
+						updates["/players/" + userKey + "/session"] = thisSession;
+						updates["/players/" + sKeys[i] + "/session"] = thisSession;
 						db.ref().update(updates);
 
 						//Listens if the player made a play
-						db.ref("/players/" + userName + "/opp/played/").on("value", function(snap) {
-							player.opp.played = snap.val();
+						db.ref("/rounds/" + player.session).on("value", function(snap) {
+							var curSess = snap.val();
+							var rounds = Object.keys(curSess);
+							var lastRound = rounds.length -1;
+							var curRound = curSess[rounds[lastRound]];
+							var plays = Object.keys(curRound)
 
-							if(player.played !== "" && player.opp.round === player.round){
-								runRps(player.played, player.opp.played);
+							if(plays.length == 2){
+								var pushKey = Object.keys(curRound[player.opp.key])
+								player.opp.name = curRound[player.opp.key][pushKey].name
+								player.opp.play = curRound[player.opp.key][pushKey].played
+								runRps(userInput, player.opp.play)
+							} else {
+								$("#comp-play").html("Waiting for opponent...")
 							}
-						});
-
-						db.ref("/players/" + player.opp.key + "/round/").on("value", function(snap) {
-							player.opp.round = snap.val();
 						});
 					}
 				}
@@ -98,24 +124,25 @@
 
 	//Listen if user plays with a click of the image
 	$("#playPick").on("click", function(event){
-		if(userName !== ""){
+		if(userName !== "" && player.opp.key !== "" && playedFlag === false){
 			event.preventDefault();
 			var id = event.target.parentNode.id //Identify the parent holder of the specific image clicked
 			if(Object.keys(playTranslater).indexOf(id) > -1 ){
 				userInput = playTranslater[id];
-				player.played = userInput;
+				playedFlag = true;
 
 				var updates = {};
-				updates["/players/" + userKey + "/played/"] = userInput;
-				updates["/players/" + player.opp.key + "/opp/played"] = userInput;
-				updates["/players/" + player.opp.key + "/opp/round"] = player.round;
-				updates["/players/" + player.opp.key + "/opp/name"] = userName;
+				db.ref("/rounds/" + player.session + "/round" + player.round + "/" + userKey).push({
+					played: userInput,
+					name: userName
+				})
 				db.ref().update(updates);
 				//db.ref("/players/" + userKey + "/playHistory/" + userInput).set(played[playable.indexOf(userInput)][0])
 			}
+		} else if(player.opp.key === "") {
+			$("#comp-play").html("Waiting for an opponent...")
 		}
 	});
-
 
 	/////////////////////////
 	//Below this point is the actual game mechanics
@@ -123,9 +150,10 @@
 
 	//executes a "round" of the game
 	function runRps(userInput, oppPlay){
-		outputResults(checkWin(userInput));
+		outputResults(checkWin(userInput, oppPlay));
 		player.round ++;
-		db.ref("/players/" + userKey + "/round").set(player.round);
+		userInput = "";
+		playedFlag = false;
 	}
 
 	//Checks if the user's play wins the round
@@ -143,7 +171,6 @@
 			record[1]++;
 			results = 0 //lose;
 		}
-		console.log("results: " + results);
 		return results;
 	}
 
@@ -155,17 +182,18 @@
 	}
 
 	function outputResults (checkWin) {
-		$("#Rock").html ("_");
-		$("#Paper").html ("_");
-		$("#Scissors").html ("_");
-		$("#input").html ( fullWord[playable.indexOf(userInput)]);
-		$("#comp-play").html ( fullWord[playable.indexOf(player.opp.played)]);
-		$("#match-results").html ( resultsVal[results]);
-		$("#scoreboard-wins").html ( record[0]);
-		$("#scoreboard-losses").html ( record[1]);
-		$("#scoreboard-draws").html ( record[2]);
+		$("#Rock").html("_");
+		$("#Paper").html("_");
+		$("#Scissors").html("_");
+		$("#input").html(fullWord[playable.indexOf(userInput)]);
+		$("#comp-play").html(fullWord[playable.indexOf(player.opp.play)]);
+		$("#match-results").html(resultsVal[results]);
+		$("#match-round").html(player.round)
+		$("#scoreboard-wins").html(record[0]);
+		$("#scoreboard-losses").html(record[1]);
+		$("#scoreboard-draws").html(record[2]);
 		$("#" + fullWord[playable.indexOf(userInput)]).html('You');
-		$("#" + fullWord[playable.indexOf(player.opp.played)]).html(player.opp.name)
+		$("#" + fullWord[playable.indexOf(player.opp.play)]).html(player.opp.name)
 		colorBox('playbox'); //use class for this
 		colorBox('imgbox');
 

@@ -142,9 +142,8 @@ img:active {
 	display: none;
 }
 
-.boldStuff {
+.panel-body span .boldStuff {
 	font-weight: bold;
 }
-
 
  

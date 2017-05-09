@@ -4,13 +4,14 @@
 	var userKey = "";
 	var userInput = "";
 	var oppPlay = "";
+	var lastRound = -1;
 	var playedFlag = false;
 	var playable = ['r','p','s'];
 	var fullWord = ['Rock', 'Paper', 'Scissors'];
 	var winCombos = ['rs','pr','sp']; //each index holds the winner if user plays the first char
 	var results = 0;
 	var resultsVal = ['Loss', 'Draw', 'Win'];
-	var resultsColor = ['#FF4136','lightgray','#25AC29'];
+	var resultsColor = ['lossBox','drawBox','winBox'];
 	var record = [0,0,0]; //win,loss,draw
 	var played = [[0,0,0],[0,0,0],[0,0,0]]; //rock[player,pc,total], paper[player,pc,total], scissor[player,pc,total]
 	var db = firebase.database();
@@ -44,13 +45,13 @@
 
       newUser.onDisconnect().remove(); //when the user disconnects remove their player from DB
       userKey = newUser.key; //store the key for reference
-	    $(".userNameInput").toggle("done"); //hide the username form
+	    $(".userNameInput").toggle(); //hide the username form
 
 	    var updates = {};
 	    updates["/players/" + userKey + "/name"] = userName;
 	    db.ref().update(updates);
 
-	    $(".mainContent").toggle("done")
+	    $(".mainContent").toggle();
 	    
 	     db.ref("/chat/").push({
         "name": "",
@@ -84,12 +85,7 @@
 						var thisSession;
 
 						//determine unique sessionID
-						if(userKey < player.opp.key){
-							thisSession = userKey + player.opp.key;
-						} else {
-							thisSession = player.opp.key + userKey;
-						}
-
+						thisSession = getUniqueSessionID(userKey, player.opp.key)
 						player.session = thisSession;
 
 						var updates = {};
@@ -112,8 +108,13 @@
 								player.opp.name = curRound[player.opp.key][pushKey].name
 								player.opp.play = curRound[player.opp.key][pushKey].played
 								runRps(userInput, player.opp.play)
+							} else if(userInput !== ""){
+								$("#input").html(fullWord[playable.indexOf(userInput)])
+								$("#" + fullWord[playable.indexOf(userInput)]).html("Played");
+								$("#comp-play").html("Waiting...")
 							} else {
-								$("#comp-play").html("Waiting for opponent...")
+								$("#input").html("Waiting on you...")
+								$("#comp-play").html("**HIDDEN**")
 							}
 						});
 					}
@@ -131,6 +132,11 @@
 				userInput = playTranslater[id];
 				playedFlag = true;
 
+				if(lastRound > -1){
+					newRoundFormat(lastRound);
+					lastRound = -1;
+				}
+
 				var updates = {};
 				db.ref("/rounds/" + player.session + "/round" + player.round + "/" + userKey).push({
 					played: userInput,
@@ -143,6 +149,14 @@
 			$("#comp-play").html("Waiting for an opponent...")
 		}
 	});
+
+	function getUniqueSessionID(usrKey, oppKey){
+		if(usrKey < oppKey){
+			return usrKey + oppKey;
+		} else {
+			return oppKey + usrKey;
+		}
+	}
 
 	/////////////////////////
 	//Below this point is the actual game mechanics
@@ -174,11 +188,16 @@
 		return results;
 	}
 
-	function colorBox(x) {
-	    elements = document.getElementsByClassName(x);
-	    for (var i = 0; i < elements.length; i++) {
-	        elements[i].style.backgroundColor=resultsColor[results];
-	    }
+	function newRoundFormat(lastRound){
+		$("#Rock").html("_");
+		$("#Paper").html("_");
+		$("#Scissors").html("_");
+		$("#input").html("");
+		$("#comp-play").html("");
+		$("#match-results").html("");
+		$("#match-round").html(player.round)
+		$('.playbox').toggleClass(resultsColor[lastRound]); 
+		$('.imgbox').toggleClass(resultsColor[lastRound]);
 	}
 
 	function outputResults (checkWin) {
@@ -194,13 +213,12 @@
 		$("#scoreboard-draws").html(record[2]);
 		$("#" + fullWord[playable.indexOf(userInput)]).html('You');
 		$("#" + fullWord[playable.indexOf(player.opp.play)]).html(player.opp.name)
-		colorBox('playbox'); //use class for this
-		colorBox('imgbox');
-
+		$('.playbox').toggleClass(resultsColor[checkWin]); 
+		$('.imgbox').toggleClass(resultsColor[checkWin]);
 		if (results === 1) { //If draw game
-			$(fullWord[playable.indexOf(userInput)]).html('Draw');
+			$("#" + fullWord[playable.indexOf(userInput)]).html('Draw');
 		}
-		//console.log(fullWord[playable.indexOf(compPlay)], fullWord[playable.indexOf(userInput)], 'Loss', record[0], record[1],record[2], played[0], played[1], played[2], Date());
+		lastRound = checkWin;
 	}
 
 

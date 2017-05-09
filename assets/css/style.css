@@ -131,11 +131,15 @@ img:active {
 }
 
 .winBox{
-
+	background-color: #25AC29;
 }
 
 .lossBox{
+	background-color: #FF4136;
+}
 
+.drawBox {
+	background-color: lightgray;
 }
 
 .done {
@@ -146,4 +150,11 @@ img:active {
 	font-weight: bold;
 }
 
+#notes{
+	color: red;
+}
+
+.activity {
+	margin-top: 7px	;
+}
  

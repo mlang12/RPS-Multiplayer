@@ -113,27 +113,32 @@
 
         <!-- Begins the Chat Panel (right side) -->
         <div class="col-sm-6">
-          <section class="content-section" id="stats">
-            <div class="panel panel-primary">
-              <div class="panel-heading">
-                <h3 class="panel-title">Game Chat</h3>
-              </div>
-              <div class="panel-body">
-                <table class="table">
-                  <tbody id="chatTable">
-                  </tbody>
-                </table>   
+          <div class="row activity">
+            <section class="content-section" id="stats">
+              <div class="panel panel-primary">
+                <div class="panel-heading">
+                  <h3 class="panel-title">Game Chat</h3>
+                </div>
+                <div class="panel-body">
+                  
+                  <div id="tableHolder">
+                    <table class="table">
+                      <tbody id="chatTable">
+                      </tbody>
+                    </table> 
+                  </div>
 
-                <div class="input-group">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="chatSend">Send</button>
-                  </span>
-                  <input type="text" class="input-group form-control" id="chatComment">
-                </div><!-- /input-group -->  
+                  <div class="input-group">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button" id="chatSend">Send</button>
+                    </span>
+                    <input type="text" class="input-group form-control" id="chatComment">
+                  </div><!-- /input-group -->  
 
-              </div>  
-            </div>      
-          </section>
+                </div>  
+              </div>      
+            </section>
+          </div>
         </div>
         <!-- Ends the Chat Panel -->
       </div> 

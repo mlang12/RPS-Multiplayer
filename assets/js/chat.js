@@ -38,13 +38,21 @@
         var sKeys = Object.keys(s[player.session]);
         var objLen = sKeys.length - 1;
         var i = 7;
+        var blanks = 0;
         var cur;
 
         if (objLen < i){
+          blanks = i - objLen;
           i = objLen;
         }
 
         $("#chatTable").empty();
+
+
+        while(blanks > 0){  
+          addRow("","","");
+          blanks--;
+        }
 
         for (; i > -1 ; i--){
           cur = s[player.session][sKeys[objLen - i]];

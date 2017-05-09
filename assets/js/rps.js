@@ -138,11 +138,12 @@
 							if(userName !== "" && player.session !== ""){
 								var curSess = snap.val();
 								var rounds = Object.keys(curSess);
-								var lastRound = rounds.length -1;
+								var lastRound = rounds.indexOf("round" + player.round);
 								var curRound = curSess[rounds[lastRound]];
 								var plays = Object.keys(curRound)
 
 								//If both players played in the round
+								
 								if(plays.length == 2){
 									var pushKey = Object.keys(curRound[player.opp.key])
 									player.opp.name = curRound[player.opp.key][pushKey].name
@@ -155,7 +156,7 @@
 									$("#comp-play").html("Waiting...");
 									$("#notes").html("Playing against " + player.opp.name);
 								} else {
-									$("#input").html("Waiting on you...");
+									$("#input").html("Waiting...");
 									$("#comp-play").html("**HIDDEN**");
 									$("#notes").html("Playing against " + player.opp.name);
 								}
@@ -204,8 +205,8 @@
 	/////////////////////////
 
 	//executes a "round" of the game
-	function runRps(userInput, oppPlay){
-		outputResults(checkWin(userInput, oppPlay));
+	function runRps(usrInput, oppPlay){
+		outputResults(checkWin(usrInput, oppPlay));
 		player.round ++;
 		userInput = "";
 		playedFlag = false;
@@ -213,13 +214,13 @@
 
 	//Checks if the user's play wins the round
 	//Essentially the game is run here...
-	function checkWin (userInput, oppPlay){
+	function checkWin (usrInput, oppPlay){
 		//played[playable.indexOf(oppPlay)][1]++
 		//played[playable.indexOf(oppPlay)][2]++
-		if (winCombos.indexOf(userInput + oppPlay) >= 0){
+		if (winCombos.indexOf(usrInput + oppPlay) >= 0){
 			record[0]++
 			results = 2 //win
-		} else if (userInput === oppPlay) {
+		} else if (usrInput === oppPlay) {
 			record[2]++
 			results = 1 //draw
 		} else {

@@ -1,6 +1,4 @@
-    // Get User Input
-  
-	var userName = "";
+  var userName = "";
 	var userKey = "";
 	var userInput = "";
 	var oppPlay = "";
@@ -41,23 +39,16 @@
 	  if(userName.length > 2 && userName.length < 16){
 		  var usersRef = db.ref("/players");
       var newUser = usersRef.push(player);
-      var dte = moment().format('h:mm:ss a');
 
       newUser.onDisconnect().remove(); //when the user disconnects remove their player from DB
       userKey = newUser.key; //store the key for reference
-	    $(".userNameInput").toggle(); //hide the username form
+	    $(".userNameInput").toggle("done"); //hide the username form with animation
 
 	    var updates = {};
 	    updates["/players/" + userKey + "/name"] = userName;
 	    db.ref().update(updates);
 
-	    $(".mainContent").toggle();
-	    
-	     db.ref("/chat/").push({
-        "name": "",
-        "time": dte,
-        "comment": userName + " has joined the game."
-      });
+	    $(".mainContent").toggle("done");//show play field with animation
 
     } else {
     	console.log("Invalid User Name. Must be between 3 and 15 characters.")
@@ -70,6 +61,45 @@
       $("#submitButton").click();
     }
   })
+
+  //listen for opponent disconnect
+  db.ref("/players/").on("value", function(snap) {
+  	//Only runs when the user has signed in and
+  	//has an opponent
+  	if(userName !== "" && player.opp.key !== ""){  
+  		var s = snap.val();
+			var sKeys = Object.keys(s);
+
+			//If opponent's key is not in game player list then...
+			if(sKeys.indexOf(player.opp.key) === -1){
+
+				//Send disconnect message
+				var dte = moment().format('h:mm:ss a');
+				var newChat = db.ref("/chat/" + player.session).push({
+	        "name": player.opp.name,
+	        "time": dte,
+	        "comment": "disconnected from the game."
+	      });
+
+				//reset user's data to be able to receive another opp
+				player.opp.name = "";
+				player.opp.key = "";
+				player.opp.play = "";
+				player.session = "";
+				player.round = 1;
+
+				//reset the data on server
+				var updates = {};
+				updates["players/" + userKey + "/session"] = "";
+				updates["players/" + userKey + "/round"] = "";
+				updates["players/" + userKey + "/opp/key"] = "";
+				updates["players/" + userKey + "/opp/name"] = "";
+				updates["players/" + userKey + "/opp/play"] = "";
+				db.ref().update(updates);
+
+			}
+  	}
+  }); //Close listen for disconnect
 
 	db.ref("/players/" + userKey).on("value", function(snap) {
 		if(userName !== ""){
@@ -95,28 +125,42 @@
 						updates["/players/" + sKeys[i] + "/session"] = thisSession;
 						db.ref().update(updates);
 
-						//Listens if the player made a play
-						db.ref("/rounds/" + player.session).on("value", function(snap) {
-							var curSess = snap.val();
-							var rounds = Object.keys(curSess);
-							var lastRound = rounds.length -1;
-							var curRound = curSess[rounds[lastRound]];
-							var plays = Object.keys(curRound)
+						var dte = moment().format('h:mm:ss a');
 
-							if(plays.length == 2){
-								var pushKey = Object.keys(curRound[player.opp.key])
-								player.opp.name = curRound[player.opp.key][pushKey].name
-								player.opp.play = curRound[player.opp.key][pushKey].played
-								runRps(userInput, player.opp.play)
-							} else if(userInput !== ""){
-								$("#input").html(fullWord[playable.indexOf(userInput)])
-								$("#" + fullWord[playable.indexOf(userInput)]).html("Played");
-								$("#comp-play").html("Waiting...")
-							} else {
-								$("#input").html("Waiting on you...")
-								$("#comp-play").html("**HIDDEN**")
+						var chatInstance = db.ref("/chat/" + thisSession).push({
+			        "name": "",
+			        "time": dte,
+			        "comment": userName + " has joined the game."
+			      });
+
+						//Listens if the player made a play to the current round
+						db.ref("/rounds/" + player.session).on("value", function(snap) {
+							if(userName !== "" && player.session !== ""){
+								var curSess = snap.val();
+								var rounds = Object.keys(curSess);
+								var lastRound = rounds.length -1;
+								var curRound = curSess[rounds[lastRound]];
+								var plays = Object.keys(curRound)
+
+								//If both players played in the round
+								if(plays.length == 2){
+									var pushKey = Object.keys(curRound[player.opp.key])
+									player.opp.name = curRound[player.opp.key][pushKey].name
+									player.opp.play = curRound[player.opp.key][pushKey].played
+									runRps(userInput, player.opp.play)
+									$("#notes").html("Playing against " + player.opp.name);
+								} else if(userInput !== ""){
+									$("#input").html(fullWord[playable.indexOf(userInput)]);
+									$("#" + fullWord[playable.indexOf(userInput)]).html("Played");
+									$("#comp-play").html("Waiting...");
+									$("#notes").html("Playing against " + player.opp.name);
+								} else {
+									$("#input").html("Waiting on you...");
+									$("#comp-play").html("**HIDDEN**");
+									$("#notes").html("Playing against " + player.opp.name);
+								}
 							}
-						});
+						});					
 					}
 				}
 			}
@@ -137,16 +181,13 @@
 					lastRound = -1;
 				}
 
-				var updates = {};
 				db.ref("/rounds/" + player.session + "/round" + player.round + "/" + userKey).push({
 					played: userInput,
 					name: userName
-				})
-				db.ref().update(updates);
-				//db.ref("/players/" + userKey + "/playHistory/" + userInput).set(played[playable.indexOf(userInput)][0])
+				});
 			}
 		} else if(player.opp.key === "") {
-			$("#comp-play").html("Waiting for an opponent...")
+			$("#notes").html("Waiting for an opponent...")
 		}
 	});
 

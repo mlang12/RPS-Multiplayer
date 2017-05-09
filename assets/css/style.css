@@ -22,8 +22,15 @@ h2 {
 }
 
 h1 {
-	font-weight: 900;
+	font-size: 500%;
 }
+
+h1,
+h2{
+	font-family: 'Ribeye', cursive;
+}
+
+
 
 #scoreboard {
 	width: 50%;
@@ -156,5 +163,10 @@ img:active {
 
 .activity {
 	margin-top: 7px	;
+}
+
+.userNameInput {
+	margin-top: 5%;
+	margin-bottom: 5%;
 }
  

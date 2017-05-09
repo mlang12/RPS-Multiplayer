@@ -1,28 +1,33 @@
-  var userName = "";
-	var userKey = "";
-	var userInput = "";
-	var oppPlay = "";
-	var lastRound = -1;
-	var playedFlag = false;
-	var playable = ['r','p','s'];
-	var fullWord = ['Rock', 'Paper', 'Scissors'];
-	var winCombos = ['rs','pr','sp']; //each index holds the winner if user plays the first char
-	var results = 0;
-	var resultsVal = ['Loss', 'Draw', 'Win'];
-	var resultsColor = ['lossBox','drawBox','winBox'];
-	var record = [0,0,0]; //win,loss,draw
-	var played = [[0,0,0],[0,0,0],[0,0,0]]; //rock[player,pc,total], paper[player,pc,total], scissor[player,pc,total]
-	var db = firebase.database();
+  var userName = ""; 													//userName selected at the begining of the game. This is duplicated into the player.name object
+	var userKey = ""; 													//The unique key generated for the player by pushing to firebase. This key is used to reference the player in code
+	var userInput = ""; 												//represents what the user played in the current roudn
+	var oppPlay = ""; 													//Holds the value of the hand played by the opponent in the current round
+	var lastRound = -1; 												//holds the result of the prior round - this is used to toggle the colors around the r,p,s images after a reset
+	var playedFlag = false; 										//Flag that indicates whether player clicked an r,p,s image in the current round (prevents from multiple or changed choices)
+	var playable = ['r','p','s']; 							//the values users can play by clicking the buttons
+	var fullWord = ['Rock', 'Paper', 'Scissors']; //array that holds the word-string value of a user's play
+	var winCombos = ['rs','pr','sp']; 					//each index holds the winner if user plays the first char
+	var results = 0; 														//code used that will indicate that result of that particular round. 0 = loss, 1 = draw, 2 = win
+	var resultsVal = ['Loss', 'Draw', 'Win']; 	//holds the strings of possible outcomes to a round
+	var resultsColor = ['lossBox','drawBox','winBox']; //holds array of classnames which will change the DOM colors based on round win/loss
+	var record = [0,0,0]; 											//win,loss,draw
+	var db = firebase.database(); 							//reference to firebase Database
+	var validChars = ["a","b","c","d","e","f",
+										"g","h","i","j","k","l",
+										"m","n","o","p","q","r",
+										"s","t","u","v","w","x",
+										"y","z","1","2","3","4",
+										"5","6","7","8","9","-"] //List of valid characters to check username input
 	
-	var player = { //push the new user to the players dir
-    "name": userName,
-    "round": 1,
-    "opp": {
+	var player = { 		//Built out object of the player where certain key values are stored. Also pushed to DB to create new player
+    "name": "", 		//duplicated userName from above
+    "round": 1, 		//the current round of the game (default is 1)
+    "opp": { 				//information about the opponenet
     	"name": "",
     	"key": "",
     	"play": ""
     },
-    "session": ""
+    "session": ""		//Unique session ID established with another player
   };
 
 	var playTranslater = {	//object to translate the rock paper scissor image names in dom to play characters
@@ -34,9 +39,10 @@
 	//Function adds the player to the DB when they submit their username 
 	$("#submitButton").on("click", function(event){
 	  event.preventDefault();
-	  userName = $("#employeeNameInput").val().trim() //Get the input for username
-	  //Check that userName is valid
-	  if(userName.length > 2 && userName.length < 16){
+	  userName = $("#employeeNameInput").val().trim().toLowerCase() //Get the input for username
+
+	  //Check that userName is valid then...
+	  if(checkUserNameValid(userName)){
 		  var usersRef = db.ref("/players");
       var newUser = usersRef.push(player);
 
@@ -51,7 +57,7 @@
 	    $(".mainContent").toggle("done");//show play field with animation
 
     } else {
-    	console.log("Invalid User Name. Must be between 3 and 15 characters.")
+    	console.log("Invalid User Name. Must be between 3 and 15 characters and contain only letters and numbers.");
     }
   });
 
@@ -106,7 +112,6 @@
 			var s = snap.val();
 			var sKeys = Object.keys(s);
 			var i;
-			console.log("s: " + JSON.stringify(s))
 
 			if(sKeys.length > 1 && userKey !== ""){ //if there is more than 1 player
 
@@ -199,6 +204,27 @@
 		} else {
 			return oppKey + usrKey;
 		}
+	}
+
+	//Function applies some rules to the desired userName to see
+	//if it is valid/acceptable
+	function checkUserNameValid(usrNme){
+		var usrChars = usrNme.split("");
+		var vld = false;
+
+		//Size check
+		if(usrNme.length < 3 || usrNme.length > 16){
+			vld = false; 	//Too many or too few characters in UN
+		}
+
+		//Character check
+		usrChars.forEach(function(chr){
+			if(validChars.indexOf(chr) < 0){
+				vld = false; //UserName had invalid characters	
+			}
+		});
+
+		return vld; //passed checks - username looks good!
 	}
 
 	/////////////////////////

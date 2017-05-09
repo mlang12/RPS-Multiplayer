@@ -37,13 +37,12 @@
         var s = snap.val();
         var sKeys = Object.keys(s[player.session]);
         var objLen = sKeys.length - 1;
-        var i = 7;
+        var i = objLen;
         var blanks = 0;
         var cur;
 
-        if (objLen < i){
-          blanks = i - objLen;
-          i = objLen;
+        if (objLen < 6){
+          blanks = 6 - objLen;
         }
 
         $("#chatTable").empty();

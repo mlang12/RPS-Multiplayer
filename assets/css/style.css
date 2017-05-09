@@ -170,5 +170,9 @@ img:active {
 	margin-bottom: 5%;
 }
 
+#tableHolder{
+	height: 275px;
+	overflow: scroll;
+}
 
  

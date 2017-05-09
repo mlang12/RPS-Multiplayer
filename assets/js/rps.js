@@ -210,7 +210,7 @@
 	//if it is valid/acceptable
 	function checkUserNameValid(usrNme){
 		var usrChars = usrNme.split("");
-		var vld = false;
+		var vld = true;
 
 		//Size check
 		if(usrNme.length < 3 || usrNme.length > 16){
@@ -224,7 +224,8 @@
 			}
 		});
 
-		return vld; //passed checks - username looks good!
+		return vld;
+
 	}
 
 	/////////////////////////

@@ -176,8 +176,19 @@ img:active {
 #tableHolder{
 	height: 230px;
 	overflow: scroll;
-	margin-bottom: 7px;
-	border-bottom: 1px solid lightgray;
+	margin-bottom: -10px;
+}
+
+.auto{
+	background-color: lightgray;
+}
+
+.usr{
+	background-color: lightblue;
+}
+
+.opp{
+	background-color: lightpink;
 }
 
  

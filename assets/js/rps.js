@@ -1,9 +1,10 @@
   var userName = ""; 													//userName selected at the begining of the game. This is duplicated into the player.name object
-	var userKey = ""; 													//The unique key generated for the player by pushing to firebase. This key is used to reference the player in code
-	var userInput = ""; 												//represents what the user played in the current roudn
+	var userKey = ""; 													//The unique key generated for the player by pushing to Firebase. This key is used to reference the player in code
+	var userInput = ""; 												//represents what the user played in the current round
 	var oppPlay = ""; 													//Holds the value of the hand played by the opponent in the current round
 	var lastRound = -1; 												//holds the result of the prior round - this is used to toggle the colors around the r,p,s images after a reset
 	var playedFlag = false; 										//Flag that indicates whether player clicked an r,p,s image in the current round (prevents from multiple or changed choices)
+	var pannelIsToggled = false;								//Flag whether the login panel has been toggled to orange on an invalid sign-in
 	var playable = ['r','p','s']; 							//the values users can play by clicking the buttons
 	var fullWord = ['Rock', 'Paper', 'Scissors']; //array that holds the word-string value of a user's play
 	var winCombos = ['rs','pr','sp']; 					//each index holds the winner if user plays the first char
@@ -55,8 +56,17 @@
 	    db.ref().update(updates);
 
 	    $(".mainContent").toggle("done");//show play field with animation
+	    $(".panel-warning").toggleClass("panel-warning");
 
     } else {
+    	$("#login-title").html("Invalid Username. Must be between 3 and 15 characters and contain only letters and numbers.");
+    	
+    	if(!pannelIsToggled) {
+    		$(".panel-success").toggleClass("panel-warning");
+    		pannelIsToggled = true;
+    	}
+
+    	shakeLoginOnWrong();
     	console.log("Invalid User Name. Must be between 3 and 15 characters and contain only letters and numbers.");
     }
   });
@@ -84,7 +94,8 @@
 				var newChat = db.ref("/chat/" + player.session).push({
 	        "name": player.opp.name,
 	        "time": dte,
-	        "comment": "disconnected from the game."
+	        "comment": "disconnected from the game.",
+	        "type": "auto"
 	      });
 
 				//reset user's data to be able to receive another opp
@@ -93,6 +104,9 @@
 				player.opp.play = "";
 				player.session = "";
 				player.round = 1;
+				userInput = "";
+				oppPlay = "";
+				playedFlag = false;
 
 				//reset the data on server
 				var updates = {};
@@ -110,6 +124,7 @@
 	db.ref("/players/" + userKey).on("value", function(snap) {
 		if(userName !== ""){
 			var s = snap.val();
+			console.log(s)
 			var sKeys = Object.keys(s);
 			var i;
 
@@ -136,13 +151,20 @@
 						var chatInstance = db.ref("/chat/" + thisSession).push({
 			        "name": "",
 			        "time": dte,
-			        "comment": userName + " has joined the game."
+			        "comment": userName + " has joined the game.",
+			        "type": "auto"
 			      });
 
 						//Listens if the player made a play to the current round
 						db.ref("/rounds/" + player.session).on("value", function(snap) {
 							if(userName !== "" && player.session !== ""){
 								var curSess = snap.val();
+
+								if(curSess === null){
+									return; //Bail of curSess is null
+								}	
+
+								console.log(curSess)
 								var rounds = Object.keys(curSess);
 								var lastRound = rounds.indexOf("round" + player.round);
 								var curRound = curSess[rounds[lastRound]];
@@ -202,6 +224,17 @@
 			return oppKey + usrKey;
 		}
 	}
+
+	function shakeLoginOnWrong() {
+   var mv = 5;  
+   var i = 0;
+   for(; i <= 7 ; i++){   
+     $('.userNameInput').animate({ 
+         'margin-left': '+=' + ( mv = -mv ) + 'px',
+         'margin-right': '-=' + mv + 'px'
+      }, 40);  
+   }
+}
 
 	//Function applies some rules to the desired userName to see
 	//if it is valid/acceptable

@@ -1,29 +1,29 @@
 "use strict"
 
-var userName = ""; 													//userName selected at the begining of the game. This is duplicated into the player.name object
+var userName = ""; 													//UserName selected at the begining of the game. This is duplicated into the player.name object
 var userKey = ""; 													//The unique key generated for the player by pushing to Firebase. This key is used to reference the player in code
-var userInput = ""; 												//represents what the user played in the current round
+var userInput = ""; 												//Represents what the user played in the current round
 var oppPlay = ""; 													//Holds the value of the hand played by the opponent in the current round
 
 var lastRound = -1; 												//holds the result of the prior round - this is used to toggle the colors around the r,p,s images after a reset
-var results = 0; 														//code used that will indicate that result of that particular round. 0 = loss, 1 = draw, 2 = win
+var results = 0; 														//Code used that will indicate that result of that particular round. 0 = loss, 1 = draw, 2 = win
 var currentNumberOfPlayers = 0;							//Holds the total people on the RPS server at the time
 
 var playedFlag = false; 										//Flag that indicates whether player clicked an r,p,s image in the current round (prevents from multiple or changed choices)
 var pannelIsToggled = false;								//Flag whether the login panel has been toggled to orange on an invalid sign-in
 
-var playable = ['r','p','s']; 							//the values users can play by clicking the buttons
-var fullWord = ['Rock', 'Paper', 'Scissors']; //array that holds the word-string value of a user's play
-var winCombos = ['rs','pr','sp']; 					//each index holds the winner if user plays the first char
-var resultsVal = ['Loss', 'Draw', 'Win']; 	//holds the strings of possible outcomes to a round
-var resultsColor = ['lossBox','drawBox','winBox']; //holds array of classnames which will change the DOM colors based on round win/loss
-var record = [0,0,0]; 											//win,loss,draw
+var playable = ['r','p','s']; 							//The values users can play by clicking the buttons
+var fullWord = ['Rock', 'Paper', 'Scissors']; //Array that holds the word-string value of a user's play
+var winCombos = ['rs','pr','sp']; 					//Each index holds the winner if user plays the first char
+var resultsVal = ['Loss', 'Draw', 'Win']; 	//Holds the strings of possible outcomes to a round
+var resultsColor = ['lossBox','drawBox','winBox']; //Holds array of classnames which will change the DOM colors based on round win/loss
+var record = [0,0,0]; 											//Win,loss,draw
 var validChars = ["a","b","c","d","e","f",
 									"g","h","i","j","k","l",
 									"m","n","o","p","q","r",
 									"s","t","u","v","w","x",
 									"y","z","1","2","3","4",
-									"5","6","7","8","9","-"] //List of valid characters to check username input
+									"5","6","7","8","9","-"]  //List of valid characters to check username input
 
 var player = { 		//Built out object of the player where certain key values are stored. Also pushed to DB to create new player
   "name": "", 		//duplicated userName from above
@@ -53,6 +53,7 @@ $("#submitButton").on("click", function(event){
   if(checkUserNameValid(userName)){
 	  var usersRef = db.ref("/players");
     var newUser = usersRef.push(player);
+    userName = firstLetterUpper(userName);
 
     newUser.onDisconnect().remove(); //when the user disconnects remove their player from DB
     userKey = newUser.key; //store the key for reference
@@ -90,22 +91,24 @@ $("#employeeNameInput").on("keypress", function(event){
 })
 
 //listen for new players joining the DB to extract a live count
-//and to find your opponent's name when it appears
-db.ref("/players/").on("value", function(snap) {
+function getNumPlayers(snap) {
 	if(userName !== "" ){  
 		var s = snap.val();
 		var sKeys = Object.keys(s);
 		currentNumberOfPlayers = sKeys.length; //Get total amount of players to display on screen.
-
-		//Get your opponenet's username if we don't have it
-		if(player.opp.name === "" && player.opp.key !== ""){
-			player.opp.name = s[player.opp.key].name;
-		}
+		return currentNumberOfPlayers;
 	}
-});
+	return 0;
+};
 
 //listen for opponent disconnect
 db.ref("/players/").on("value", function(snap) {
+
+	//When number of players change update the total players
+	if(userName !== ""){
+		$("#playerCounter").html("There are currently " + getNumPlayers(snap) + " RPS players in the world!");
+	}
+
 	//Only runs when the user has signed in and
 	//has an opponent
 	if(userName !== "" && player.opp.key !== ""){  
@@ -123,6 +126,8 @@ db.ref("/players/").on("value", function(snap) {
         "comment": "disconnected from the game.",
         "type": "auto"
       });
+
+      $("#notes").html(player.opp.name + " left the game...")
 
 			//reset user's data to be able to receive another opp
 			player.opp.name = "";
@@ -146,7 +151,21 @@ db.ref("/players/").on("value", function(snap) {
 	}
 }); //Close listen for disconnect
 
+//Extract opponent's name from the chat join
+db.ref("/chat/" + player.session).on("value", function(snap) {
+	if(player.session !== "" && player.opp.name === ""){
+		var s = snap.val();
+		var sKeys = Object.keys(s[player.session]);
+		var i = 0;
 
+		for(; i < sKeys.length ; i++){
+			if(s[player.session][sKeys[i]].name !== userName && s[player.session][sKeys[i]].name != ""){
+				player.opp.name = s[player.session][sKeys[i]].name;
+				$("#notes").html("Playing against " + player.opp.name);
+			}
+		}
+	}
+});
 
 db.ref("/players/" + userKey).on("value", function(snap) {
 	if(userName !== ""){
@@ -164,6 +183,7 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 				//and this user doesnt already have an opponent
 				if(s[sKeys[i]].opp.key === "" && sKeys[i] !== userKey && player.opp.key === ""){
 					player.opp.key = sKeys[i]; //Establish this player as your opponent
+					player.opp.name = s[sKeys[i]].name;
 					var thisSession;
 
 					//Determine unique sessionID
@@ -174,6 +194,7 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 					var updates = {};
 					updates["/players/" + userKey + "/opp/key"] = player.opp.key;
 					updates["/players/" + sKeys[i] + "/opp/key"] = userKey; 			//establish to your opponent that you are the their opp
+					updates["/players/" + sKeys[i] + "/opp/name"] = userName;
 					updates["/players/" + userKey + "/session"] = thisSession;
 					updates["/players/" + sKeys[i] + "/session"] = thisSession;
 					db.ref().update(updates);
@@ -183,9 +204,9 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 					//Push a message to the chat that the user has joined the game
 					var dte = moment().format('h:mm:ss a');
 					db.ref("/chat/" + thisSession).push({
-		        "name": "",
+		        "name": userName,
 		        "time": dte,
-		        "comment": userName + " has joined the game.",
+		        "comment": "Joined the game.",
 		        "type": "auto"
 		      });
 
@@ -220,7 +241,7 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 
 								$("#input").html(fullWord[playable.indexOf(userInput)]);			//Display what the user played in the current round
 								$("#" + fullWord[playable.indexOf(userInput)]).html("Played");//Indicate over the icon which hand was played
-								$("#notes").html("Waiting for " + player.opp.name + ".");						//Indicate that waiting for opp to play
+								$("#notes").html("Waiting for " + player.opp.name + "...");						//Indicate that waiting for opp to play
 
 							// The round was updated because opp played and user hasn't
 							} else {
@@ -231,6 +252,8 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 					});					
 				}
 			}
+		} else { //If you are the only player in the database
+			$("#notes").html("Waiting for someone else to join the game...");
 		}
 	}	
 });
@@ -258,6 +281,15 @@ $("#playPick").on("click", function(event){
 		$("#notes").html("Waiting for an opponent...")
 	}
 });
+
+//Makes the first letter of the passed string uppercase
+function firstLetterUpper(str){
+	var s = str;
+	s = s.split("");
+	s[0] = s[0].toUpperCase();
+	s = s.join("");
+	return s;
+}
 
 //Generates the unique session ID used by each player
 //Combines each player's unique session ID based on

@@ -159,12 +159,9 @@
 								} else if(userInput !== ""){
 									$("#input").html(fullWord[playable.indexOf(userInput)]);
 									$("#" + fullWord[playable.indexOf(userInput)]).html("Played");
-									$("#comp-play").html("Waiting...");
-									$("#notes").html("Playing against " + player.opp.name);
+									$("#notes").html("Waiting for " + player.opp.name);
 								} else {
-									$("#input").html("Waiting...");
-									$("#comp-play").html("**HIDDEN**");
-									$("#notes").html("Playing against " + player.opp.name);
+									$("#notes").html("Your turn! <br> Playing against " + player.opp.name);
 								}
 							}
 						});					

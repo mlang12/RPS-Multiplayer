@@ -48,15 +48,17 @@
         $("#chatTable").empty();
 
 
-        while(blanks > 0){  
+        /*while(blanks > 0){  
           addRow("","","");
           blanks--;
-        }
+        }*/
 
         for (; i > -1 ; i--){
           cur = s[player.session][sKeys[objLen - i]];
           addRow(cur.name, cur.time, cur.comment);
         }
+
+        $("#tableHolder").scrollTop($("#tableHolder")[0].scrollHeight)
       }
     }
   })
@@ -67,7 +69,7 @@
   
     $('#chatTable').append(  
       '<tr>' + 
-        '<td>' + timestamp + " <span class='boldStuff'>" + name + ": </span>" + comment + '</td>' +                  //Name
+        '<td>' + timestamp + " <span class='boldStuff'>" + name + ": </span>" + comment + '</td>' + 
       '</tr>'
     );
   }

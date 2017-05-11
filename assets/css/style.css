@@ -31,7 +31,8 @@ h2{
 	font-family: 'Ribeye', cursive;
 }
 
-#scoreboard {
+#scoreboard,
+#currentgame {
 	width: 50%;
 }
 
@@ -39,10 +40,6 @@ h2{
 img {
 	width: 100%;
 	margin-bottom: 3%;
-}
-
-#currentgame {
-	width: 50%;
 }
 
 .content-section {
@@ -69,9 +66,7 @@ td{
 }
 
 img{
-	border-style: solid;
-	border-width: 1px;
-	border-color: lightgray;
+	border: solid 1px lightgray;
 	border-bottom-width: 3px;
 }
 
@@ -108,7 +103,8 @@ img{
 #Rock,
 #Paper,
 #Scissors,
-.panel-body p {
+.panel-body p,
+.panel-body span .boldStuff {
 	font-weight: bold;
 }
 
@@ -150,14 +146,6 @@ img:active {
 	background-color: lightgray;
 }
 
-.done {
-	display: none;
-}
-
-.panel-body span .boldStuff {
-	font-weight: bold;
-}
-
 #notes{
 	color: red;
 }
@@ -190,6 +178,10 @@ img:active {
 
 .opp {
 	background-color: lightpink;
+}
+
+.done{
+	display: none;
 }
 
 

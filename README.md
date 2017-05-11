@@ -15,7 +15,7 @@ Design Notes:
 
 -- If opponent plays a hand will indicate to user that it is their turn and other player has played
 
--- Starting a new round is done by clicking on which hand to pay next - this automatically triggers reset of UI items
+-- Starting a new round is done by clicking on which hand to play next - this automatically triggers reset of UI items
 
 -- To disconnect from the current game the user must either refresh page or close page (at the moment)
 

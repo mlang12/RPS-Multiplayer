@@ -28,3 +28,9 @@ Design Notes:
 
 Tech Used:
 -- HTML, CSS, JavaScript, jQuery, Bootstrap, moment.js, Google Firebase, also utilized some Google fonts and a bootstrap theme.
+
+
+You can find a live deployed version here:
+https://mlang12.github.io/RPS-Multiplayer/
+
+Thank you for coming by!

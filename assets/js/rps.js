@@ -1,29 +1,28 @@
 "use strict";
 
-var userName = ""; 													//UserName selected at the begining of the game. This is duplicated into the player.name object
-var userKey = ""; 													//The unique key generated for the player by pushing to Firebase. This key is used to reference the player in code
-var userInput = ""; 												//Represents what the user played in the current round
-var oppPlay = ""; 													//Holds the value of the hand played by the opponent in the current round
-
-var lastRound = -1; 												//holds the result of the prior round - this is used to toggle the colors around the r,p,s images after a reset
-var results = 0; 														//Code used that will indicate that result of that particular round. 0 = loss, 1 = draw, 2 = win
-var currentNumberOfPlayers = 0;							//Holds the total people on the RPS server at the time
-
-var playedFlag = false; 										//Flag that indicates whether player clicked an r,p,s image in the current round (prevents from multiple or changed choices)
-var pannelIsToggled = false;								//Flag whether the login panel has been toggled to orange on an invalid sign-in
-
-var playable = ["r","p","s"]; 							//The values users can play by clicking the buttons
+var userName = ""; //UserName selected at the begining of the game. This is duplicated into the player.name object
+var userKey = ""; //The unique key generated for the player by pushing to Firebase. This key is used to reference the player in code
+var userInput = "";  //Represents what the user played in the current round
+var oppPlay = "";  //Holds the value of the hand played by the opponent in the current round
+var lastRound = -1;  //Holds the result of the prior round - this is used to toggle the colors around the r,p,s images after a reset
+var results = 0;  //Code used that will indicate that result of that particular round. 0 = loss, 1 = draw, 2 = win
+var currentNumberOfPlayers = 0;  //Holds the total people on the RPS server at the time
+var playedFlag = false;  //Flag that indicates whether player clicked an r,p,s image in the current round (prevents from multiple or changed choices)
+var pannelIsToggled = false;  //Flag whether the login panel has been toggled to orange on an invalid sign-in
+var playable = ["r","p","s"];  //The values users can play by clicking the buttons
 var fullWord = ["Rock", "Paper", "Scissors"]; //Array that holds the word-string value of a user"s play
-var winCombos = ["rs","pr","sp"]; 					//Each index holds the winner if user plays the first char
-var resultsVal = ["Loss", "Draw", "Win"]; 	//Holds the strings of possible outcomes to a round
-var resultsColor = ["lossBox","drawBox","winBox"]; //Holds array of classnames which will change the DOM colors based on round win/loss
-var record = [0,0,0]; 											//Win,loss,draw
-var validChars = ["a","b","c","d","e","f",
-									"g","h","i","j","k","l",
-									"m","n","o","p","q","r",
-									"s","t","u","v","w","x",
-									"y","z","1","2","3","4",
-									"5","6","7","8","9","-"];  //List of valid characters to check username input
+var winCombos = ["rs","pr","sp"];  //Each index holds the winner if user plays the first char
+var resultsVal = ["Loss", "Draw", "Win"];  //Holds the strings of possible outcomes to a round
+var resultsColor = ["lossBox","drawBox","winBox"];  //Holds array of classnames which will change the DOM colors based on round win/loss
+var record = [0,0,0];  //Win,loss,draw
+var validChars = [  //List of valid characters to check username input
+  "a","b","c","d","e","f",
+	"g","h","i","j","k","l",
+	"m","n","o","p","q","r",
+	"s","t","u","v","w","x",
+	"y","z","1","2","3","4",
+	"5","6","7","8","9","-"
+];  
 
 var player = { 		//Built out object of the player where certain key values are stored. Also pushed to DB to create new player
   "name": "", 		//duplicated userName from above
@@ -42,7 +41,7 @@ var playTranslater = {	//object to translate the rock paper scissor image names 
 	scissorsimg: "s"
 };
 
-var db = firebase.database(); 							//reference to firebase Database
+var db = firebase.database();  //reference to firebase Database
 
 //Function adds the player to the DB when they submit their username 
 $("#submitButton").on("click", function(event){
@@ -92,7 +91,7 @@ $("#employeeNameInput").on("keypress", function(event){
 
 //listen for new players joining the DB to extract a live count
 function getNumPlayers(snap) {
-	if(userName !== "" ){  
+  if(userName !== "" ){  
 		var s = snap.val();
 		var sKeys = Object.keys(s);
 		currentNumberOfPlayers = sKeys.length; //Get total amount of players to display on screen.
@@ -217,46 +216,7 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 		        "type": "auto"
 		      });
 
-					//Listens if the player made a play to the current round
-					//Due to scoping this listener needs to be instantiated at the time
-					//the session id is established
-					db.ref("/rounds/" + player.session).on("value", function(snap) {
-						if(userName !== "" && player.session !== ""){
-							var curSess = snap.val();
-
-							//Bail if curSess is null
-							if(curSess === null){
-								return; 
-							}	
-
-							//Drill in to the round data to find what users played
-							var rounds = Object.keys(curSess);
-							var mostRecentRound = rounds.indexOf("round" + player.round);
-							var curRound = curSess[rounds[mostRecentRound]];
-							var plays = Object.keys(curRound);
-
-							//If both players played in the round
-							if(plays.length == 2){
-
-								var pushKey = Object.keys(curRound[player.opp.key]);   				//Grab the key the opponent used in the round for ref
-								player.opp.play = curRound[player.opp.key][pushKey].played;		//Store the opponent"s played hand
-								runRps(userInput, player.opp.play);														//Send user and opp plays to the game engine
-								$("#notes").html("Playing against " + player.opp.name);				//Put default note in the notes section
-
-							// If the round was updated and the user played a hand, but opp did not
-							} else if(userInput !== ""){ 
-
-								$("#input").html(fullWord[playable.indexOf(userInput)]);			//Display what the user played in the current round
-								$("#" + fullWord[playable.indexOf(userInput)]).html("Played");//Indicate over the icon which hand was played
-								$("#notes").html("Waiting for " + player.opp.name + "...");						//Indicate that waiting for opp to play
-
-							// The round was updated because opp played and user hasn"t
-							} else {
-
-								$("#notes").html("Your turn! " + player.opp.name + " has gone.");																//Remind user it is their turn												
-							}
-						}
-					});					
+					addRoundListener();
 				}
 			}
 		} else { //If you are the only player in the database
@@ -264,6 +224,49 @@ db.ref("/players/" + userKey).on("value", function(snap) {
 		}
 	}	
 });
+
+//Listens if the player made a play to the current round
+//Due to scoping this listener needs to be instantiated at the time
+//the session id is established
+function addRoundListener(){
+	db.ref("/rounds/" + player.session).on("value", function(snap) {
+		if(userName !== "" && player.session !== ""){
+			var curSess = snap.val();
+
+			//Bail if curSess is null
+			if(curSess === null){
+				return; 
+			}	
+
+			//Drill in to the round data to find what users played
+			var rounds = Object.keys(curSess);
+			var mostRecentRound = rounds.indexOf("round" + player.round);
+			var curRound = curSess[rounds[mostRecentRound]];
+			var plays = Object.keys(curRound);
+
+			//If both players played in the round
+			if(plays.length == 2){
+
+				var pushKey = Object.keys(curRound[player.opp.key]);  //Grab the key the opponent used in the round for ref
+				player.opp.play = curRound[player.opp.key][pushKey].played;  //Store the opponent"s played hand
+				runRps(userInput, player.opp.play);  //Send user and opp plays to the game engine
+				$("#notes").html("Playing against " + player.opp.name);  //Put default note in the notes section
+
+			// If the round was updated and the user played a hand, but opp did not
+			} else if(userInput !== ""){ 
+
+				$("#input").html(fullWord[playable.indexOf(userInput)]);			//Display what the user played in the current round
+				$("#" + fullWord[playable.indexOf(userInput)]).html("Played");//Indicate over the icon which hand was played
+				$("#notes").html("Waiting for " + player.opp.name + "...");						//Indicate that waiting for opp to play
+
+			// The round was updated because opp played and user hasn"t
+			} else {
+
+				$("#notes").html("Your turn! " + player.opp.name + " has gone.");																//Remind user it is their turn												
+			}
+		}
+	});
+}
 
 //Listen if user plays with a click of the image
 $("#playPick").on("click", function(event){

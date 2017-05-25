@@ -295,11 +295,9 @@ $("#playPick").on("click", function (event) {
 
 //Makes the first letter of the passed string uppercase
 function firstLetterUpper(str) {
-  var s = str;
-  s = s.split("");
+  var s = str.split("");
   s[0] = s[0].toUpperCase();
-  s = s.join("");
-  return s;
+  return s.join("");
 }
 
 //Generates the unique session ID used by each player

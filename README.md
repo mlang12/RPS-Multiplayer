@@ -13,12 +13,10 @@ This is the classic rock paper scissors game with a random person on the interne
 8. A unique session ID is created when two players pair - this ID is used to listen for updates from the other player and allows for more than 2 people to play at a time on the web.
 9. There is basic input validations on the username as well as the chat (to see if there is a recipient)
 
-
-
-
 ### Tech Used:
 HTML, CSS, JavaScript, jQuery, Bootstrap, moment.js, Google Firebase, also utilized some Google fonts and a bootstrap theme.
 
 ### Live!
 You can find a live deployed version here: [mindbrier.com/rps](https://mindbrier.com/rps)
+Hint: If you don't have a buddy to play with you can open the game in a second tab to simulate having an opponent 
 
